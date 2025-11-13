@@ -9,3 +9,152 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+.project-card {
+    will-change: transform, opacity;
+}
+
+/* mouse tracker styling */
+#mouse-tracker {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 120px;
+    /* main blob size */
+    height: 120px;
+    border-radius: 9999px;
+    /* circle */
+    transform: translate(-50%, -50%) scale(1);
+    z-index: 60;
+    mix-blend-mode: screen;
+    background: radial-gradient(circle at 40% 35%, rgba(255, 100, 180, 0.65), rgba(0, 120, 255, 0.25) 40%, rgba(0, 0, 0, 0) 70%);
+    filter: blur(18px);
+    opacity: 0.6;
+    transition: background 0.3s ease;
+    will-change: transform, opacity, filter;
+}
+
+/* inner bright highlight - created by JS but style here for fallback/override */
+#mouse-tracker .mouse-inner {
+    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.08);
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.15) 55%);
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+#hero-title {
+    color: #ffffff;
+    text-shadow:
+        -2px -2px 0 #000,
+        2px -2px 0 #000,
+        -2px 2px 0 #000,
+        2px 2px 0 #000;
+    /* full black stroke */
+}
+
+
+#hero-title .char {
+    display: inline-block;
+    line-height: 1;
+    will-change: transform, opacity;
+}
+
+.whitespace {
+    display: inline-block;
+    width: 0.35em;
+}
+
+
+/* Fullscreen loader */
+#page-loader {
+    position: fixed;
+    inset: 0;
+    background: #0b0b10;
+    /* dark so no white flash */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#page-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Percentage text */
+#loader-percent {
+    font-size: 3rem;
+    font-weight: 600;
+    color: #ffffff;
+    font-family: 'Bruno Ace SC', sans-serif;
+    letter-spacing: 2px;
+    transition: color 0.3s ease;
+}
+
+/* Optional glow-free clean look */
+.loader-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* subtitle & cursor */
+#hero-subwrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#hero-subtitle {
+    min-width: 220px;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+#hero-cursor {
+    display: inline-block;
+    transform-origin: center;
+    opacity: 1;
+    transition: opacity .2s linear;
+}
+
+/* Blink animation for cursor (respects reduced-motion) */
+@media (prefers-reduced-motion: no-preference) {
+    @keyframes blink {
+        0% {
+            opacity: 1
+        }
+
+        49% {
+            opacity: 1
+        }
+
+        50% {
+            opacity: 0
+        }
+
+        100% {
+            opacity: 0
+        }
+    }
+
+    #hero-cursor {
+        animation: blink 1s step-end infinite;
+    }
+}
+
+/* Reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+    #hero-cursor {
+        animation: none;
+        opacity: 0.9;
+    }
+}
+
+
