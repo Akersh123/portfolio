@@ -27,8 +27,8 @@
             <nav class="space-x-4 text-sm text-white">
                 <a href="#about-section" class="hover:underline">About</a>
                 <a href="#projects" class="hover:underline">Projects</a>
-                <a href="#resume" class="hover:underline">Resume</a>
-                <a href="#contact" class="hover:underline">Contact</a>
+                <a href="{{ route('coming-soon') }}" class="hover:underline">Resume</a>
+                <a href="{{ route('coming-soon.contact') }}" class="hover:underline">Contact</a>
             </nav>
         </div>
 
