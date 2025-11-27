@@ -66,7 +66,7 @@
 
         <!-- inner dark circle (visual core). Keep as element so we can control exact sizing -->
         <span class="scroll-core" aria-hidden="true">
-            <span class="chev" aria-hidden="true"><img id="page-rocket" src="/images/rocket.png" alt="rocket"
+            <span class="chev" aria-hidden="true"><img id="page-rocket" src="{{ asset('images/rocket.png') }}" alt="rocket"
                     aria-hidden="true" /></span>
         </span>
     </button>
