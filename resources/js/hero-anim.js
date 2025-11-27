@@ -1,5 +1,11 @@
 // resources/js/hero-anim.js
 import { gsap } from "gsap";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+
+gsap.registerPlugin(ScrollToPlugin, ScrollTrigger, SplitText, MotionPathPlugin);
 
 const REDUCE_MOTION =
     window.matchMedia &&
@@ -178,4 +184,212 @@ export function initMouseTracker() {
     window.addEventListener("mousemove", handler, { passive: true });
 
     console.log("[mouse-tracker] initialized");
+}
+
+export function initScrollToTopWithProgress({
+    buttonId = "scrollToTop",
+    circleSelector = ".progress-ring__circle",
+    showAfter = 220,
+} = {}) {
+    const btn = document.getElementById(buttonId);
+    if (!btn) return;
+    const circle = btn.querySelector(circleSelector);
+    if (!circle) return;
+
+    const r = Number(circle.getAttribute("r") || 28);
+    const circumference = 2 * Math.PI * r;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = `${circumference}`;
+
+    function setProgress(ratio) {
+        const clamped = Math.max(0, Math.min(1, ratio));
+        const dash = circumference - circumference * clamped;
+        circle.style.strokeDashoffset = String(dash);
+    }
+
+    let ticking = false;
+    function onScrollUpdate() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            const scrollTop = window.scrollY || window.pageYOffset;
+            const docHeight =
+                Math.max(
+                    document.documentElement.scrollHeight,
+                    document.body.scrollHeight
+                ) - window.innerHeight;
+            const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+            setProgress(progress);
+            if (scrollTop > showAfter) btn.classList.add("show");
+            else btn.classList.remove("show");
+            ticking = false;
+        });
+    }
+
+    window.addEventListener("scroll", onScrollUpdate, { passive: true });
+    window.addEventListener("resize", onScrollUpdate, { passive: true });
+    onScrollUpdate();
+
+    const hasGSAP = !!(window.gsap && window.gsap.ScrollToPlugin);
+    btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (hasGSAP) {
+            window.gsap.to(window, {
+                duration: 0.9,
+                ease: "power3.inOut",
+                scrollTo: { y: 0, autoKill: true },
+            });
+        } else if ("scrollBehavior" in document.documentElement.style) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+            const start = window.scrollY || window.pageYOffset;
+            const dur = 700,
+                startTime = performance.now();
+            function frame(now) {
+                const t = Math.min(1, (now - startTime) / dur);
+                const eased = 1 - Math.pow(1 - t, 3);
+                window.scrollTo(0, Math.round(start * (1 - eased)));
+                if (t < 1) requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+    });
+
+    btn.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter" || ev.key === " ") {
+            ev.preventDefault();
+            btn.click();
+        }
+    });
+
+    // debug
+    console.debug(
+        "[scrollToTop] init done; r:",
+        r,
+        "circumference:",
+        circumference
+    );
+    return { setProgress };
+}
+
+export function initScrollRocketBobbing({
+    buttonSelector = "#scrollToTop",
+    rocketSelector = "#page-rocket",
+    bobY = -6, // px upward travel (negative = up)
+    rotateDeg = -2, // small tilt while bobbing
+    duration = 1.05, // seconds
+} = {}) {
+    const btn = document.querySelector(buttonSelector);
+    if (!btn)
+        return console.debug(
+            "[initScrollRocketBobbing] button not found:",
+            buttonSelector
+        );
+
+    const rocket = btn.querySelector(rocketSelector);
+    if (!rocket)
+        return console.debug(
+            "[initScrollRocketBobbing] rocket not found:",
+            rocketSelector
+        );
+
+    // Respect prefers-reduced-motion: use CSS fallback
+    const REDUCE =
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (REDUCE) {
+        btn.querySelector(".scroll-core")?.classList.add("rocket-fallback");
+        return;
+    }
+
+    // Clean up previous timeline if re-initialized
+    if (initScrollRocketBobbing._tl) {
+        try {
+            initScrollRocketBobbing._tl.kill();
+        } catch (e) {}
+        initScrollRocketBobbing._tl = null;
+    }
+    if (initScrollRocketBobbing._observer) {
+        initScrollRocketBobbing._observer.disconnect();
+        initScrollRocketBobbing._observer = null;
+    }
+
+    // create a repeating timeline but start paused — we will play only when button has .show
+    const tl = gsap.timeline({ repeat: -1, yoyo: true, paused: true });
+    tl.to(rocket, {
+        y: bobY,
+        rotation: rotateDeg,
+        duration,
+        ease: "sine.inOut",
+    });
+
+    initScrollRocketBobbing._tl = tl;
+
+    // If button already visible (.show), play
+    if (btn.classList.contains("show")) tl.play();
+
+    // Observe class changes to toggle animation when .show gets added/removed
+    const mo = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+            if (m.attributeName === "class") {
+                const has = btn.classList.contains("show");
+                if (has && tl.paused()) tl.play();
+                else if (!has && !tl.paused()) tl.pause();
+            }
+        }
+    });
+
+    mo.observe(btn, { attributes: true, attributeFilter: ["class"] });
+    initScrollRocketBobbing._observer = mo;
+
+    // Also toggle on page load / initial state (in case the button is already shown)
+    // If you want the bob always running even when hidden, remove observer logic above and call tl.play() directly.
+    console.debug("[initScrollRocketBobbing] initialized (GSAP bob)", {
+        bobY,
+        rotateDeg,
+        duration,
+    });
+}
+
+export function initScrollReveal() {
+    const section = document.querySelector("#about-section");
+    const line = document.querySelector("#about-scroll-line");
+    if (!section || !line) return;
+
+    // If already split before (Livewire / multiple inits), revert
+    if (line._aboutSplit) {
+        line._aboutSplit.revert();
+    }
+
+    // Split into characters
+    const split = new SplitText(line, { type: "chars" });
+    line._aboutSplit = split;
+    const chars = split.chars;
+
+    // start all letters as grey
+    gsap.set(chars, { color: "#eeeeee" }); // gray-500-ish
+
+    // timeline controlled by scroll
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: section,
+            start: "top top", // when about hits top of viewport
+            end: "+=1000", // how much scroll to finish the effect (tweak)
+            scrub: true, // tie progress to scroll
+            pin: true, // ⬅️ keep this section fixed while scrolling
+            pinSpacing: true, // leave space so layout doesn’t jump
+            // markers: true,
+        },
+    });
+
+    tl.to(chars, {
+        color: "#000000", 
+        ease: "none",
+        stagger: {
+            each: 0.04, // time between each letter's change
+            from: "start", // left to right
+        },
+    });
+
+    ScrollTrigger.refresh();
 }

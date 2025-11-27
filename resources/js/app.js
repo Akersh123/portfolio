@@ -1,13 +1,58 @@
 // resources/js/app.js
 import "./bootstrap";
 import "./gsap-init";
-import { animateHeroText, initMouseTracker } from "./hero-anim";
+import {
+    animateHeroText,
+    initMouseTracker,
+    initScrollToTopWithProgress,
+    initScrollRocketBobbing,
+    initScrollReveal,
+} from "./hero-anim";
 import { initRotatingSubtitle } from "./rotating-subtitle";
+import { initGalleryFree } from "./skill-effect";
+import { initSkillDragReorder } from "./inertia";
 
+let skillDragHandle = null;
 function initAll() {
     try {
         animateHeroText();
         initMouseTracker();
+        initScrollToTopWithProgress();
+        initScrollRocketBobbing();
+        initGalleryFree({
+            containerSelector: "#project-managed-cards",
+            itemSelector: ".skill-item",
+            globalStrength: 0.9,
+            maxTranslate: 44,
+            maxRotate: 12,
+            maxScale: 1.14,
+        });
+        initScrollReveal();
+
+        if (
+            skillDragHandle &&
+            typeof skillDragHandle.recalibrate === "function"
+        ) {
+            skillDragHandle.recalibrate();
+        } else {
+            // destroy any stray instance on DOM container first (defensive)
+            const root = document.querySelector("#project-managed-cards");
+            if (
+                root &&
+                root.__skillDragInstance &&
+                typeof root.__skillDragInstance.destroy === "function"
+            ) {
+                root.__skillDragInstance.destroy();
+            }
+            skillDragHandle = initSkillDragReorder(
+                ".skill-item",
+                "#project-managed-cards",
+                {
+                    snapThreshold: 140,
+                    animationConfig: { duration: 0.28, ease: "power2.out" },
+                }
+            );
+        }
     } catch (err) {
         console.error("initAll error:", err);
     }
@@ -24,10 +69,24 @@ if (document.readyState === "loading") {
 document.addEventListener("livewire:load", () => {
     initAll();
 
-    // also re-run after Livewire finishes processing messages
     if (window.Livewire) {
-        window.Livewire.hook("message.processed", () => {
-            initAll();
+        // message.processed runs frequently; prefer recalibrate instead of recreate
+        window.Livewire.hook("message.processed", (message, component) => {
+            try {
+                if (
+                    skillDragHandle &&
+                    typeof skillDragHandle.recalibrate === "function"
+                ) {
+                    skillDragHandle.recalibrate();
+                } else {
+                    // fallback: re-init
+                    initAll();
+                }
+                initScrollReveal();
+                ScrollTrigger.refresh();
+            } catch (e) {
+                console.error("Livewire hook error:", e);
+            }
         });
     }
 });
@@ -101,7 +160,6 @@ function initPercentageLoader() {
         loader.classList.add("hidden");
     }, 4000);
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
     initPercentageLoader();

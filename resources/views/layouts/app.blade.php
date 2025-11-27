@@ -23,7 +23,7 @@
 
     <header class="absolute top-0 left-0 right-0 z-40">
         <div class="w-full mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" class="text-xl text-white font-bold">Akersh</a>
+            <a href="/" class="text-xl text-white font-bold">AB</a>
             <nav class="space-x-4 text-sm text-white">
                 <a href="#about-section" class="hover:underline">About</a>
                 <a href="#projects" class="hover:underline">Projects</a>

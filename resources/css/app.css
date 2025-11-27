@@ -28,7 +28,7 @@
     transform: translate(-50%, -50%) scale(1);
     z-index: 60;
     mix-blend-mode: screen;
-    background: radial-gradient(circle at 40% 35%, rgba(255, 100, 180, 0.65), rgba(0, 120, 255, 0.25) 40%, rgba(0, 0, 0, 0) 70%);
+    background: radial-gradient(circle at 40% 35%, rgba(180, 100, 255, 0.65), rgba(0, 120, 255, 0.25) 40%, rgba(0, 0, 0, 0) 70%);
     filter: blur(18px);
     opacity: 0.6;
     transition: background 0.3s ease;
@@ -157,4 +157,220 @@
     }
 }
 
+/* container button */
+.scroll-to-top {
+    position: fixed;
+    right: 20px;
+    bottom: 24px;
 
+    /* explicit size — SVG and inner core will align to this */
+    width: 64px;
+    height: 64px;
+
+    padding: 0;
+    /* NO padding to avoid gaps */
+    border: none;
+    background: transparent;
+    /* button background is provided by inner .scroll-core */
+    display: inline-grid;
+    place-items: center;
+    z-index: 99999;
+    cursor: pointer;
+    pointer-events: none;
+    /* disabled until .show applied */
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity .28s ease, transform .28s ease;
+}
+
+/* visible state */
+.scroll-to-top.show {
+    pointer-events: auto;
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* SVG covers full button box so its center aligns with the core */
+.scroll-to-top .progress-ring {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    display: block;
+    z-index: 1;
+    /* behind the core */
+}
+
+/* the colored progress stroke — nice contrast and visible */
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.12s linear;
+    stroke: #8357E2;
+}
+
+/* inner dark circular core: exactly centered and sized to leave small inner spacing */
+.scroll-to-top .scroll-core {
+    width: 48px;
+    /* core slightly smaller than outer 64 so ring is visible close to it */
+    height: 48px;
+    border-radius: 9999px;
+    background: rgba(255, 241, 113, 0.98);
+    /* dark core */
+    display: inline-grid;
+    place-items: center;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    border: 2px solid rgba(255, 255, 255, 0.03);
+    z-index: 2;
+    /* sit above the SVG ring */
+}
+
+/* chevron centered inside the core */
+.scroll-to-top .chev {
+    color: #fff;
+    font-size: 14px;
+    line-height: 1;
+    display: inline-block;
+    transform: translateY(-1px);
+}
+
+/* hover/focus states */
+.scroll-to-top:hover .scroll-core {
+    transform: scale(1.06);
+    box-shadow: 0 14px 40px rgba(15, 15, 14, 0.6);
+}
+
+.scroll-to-top:focus .scroll-core {
+    outline: 3px solid rgba(255, 255, 255, 0.06);
+    outline-offset: 4px;
+}
+
+/* responsive tweaks */
+@media (max-width: 480px) {
+    .scroll-to-top {
+        width: 54px;
+        height: 54px;
+        right: 14px;
+        bottom: 18px;
+        transform: scale(0.95);
+    }
+
+    .scroll-to-top .scroll-core {
+        width: 40px;
+        height: 40px;
+    }
+
+    .progress-ring__bg,
+    .progress-ring__circle {
+        stroke-width: 5;
+    }
+}
+
+
+/* Skills card base */
+/* Remove card visuals — keep container bare */
+.skills-card,
+#project-managed-section {
+    background: transparent;
+}
+
+/* grid - keep same spacing but no 'card' feel */
+.skills-grid {
+    display: grid;
+    gap: 1.25rem;
+    align-items: center;
+    justify-items: center;
+}
+
+/* each icon box — neutral, no background */
+.skill-item {
+    display: inline-grid;
+    place-items: center;
+    width: 80px;
+    /* adjust to your icon size */
+    height: 80px;
+    will-change: transform;
+    transform-style: preserve-3d;
+    transition: box-shadow 180ms ease, transform 180ms ease;
+    border-radius: 8px;
+    /* optional */
+    background: transparent;
+    /* NO card bg */
+    cursor: pointer;
+    user-select: none;
+}
+
+/* image inside */
+.skill-item img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    pointer-events: none;
+}
+
+/* simple hover/keyboard focus */
+/* .skill-item:focus,
+.skill-item:hover {
+    outline: none;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.15);
+} */
+
+/* respects reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .skill-item {
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+
+/* CSS: ensure rocket image is centered and has a graceful CSS fallback bob */
+.scroll-core img#page-rocket {
+    display: block;
+    width: 32px;
+    /* adjust size to taste */
+    height: auto;
+    transform-origin: 50% 60%;
+    will-change: transform;
+    pointer-events: none;
+}
+
+/* CSS fallback bob (used if GSAP not available) */
+@keyframes rocket-bob {
+    0% {
+        transform: translateY(0) rotate(0.0deg);
+    }
+
+    50% {
+        transform: translateY(-6px) rotate(-2deg);
+    }
+
+    100% {
+        transform: translateY(0) rotate(0.0deg);
+    }
+}
+
+.scroll-core.rocket-fallback img#page-rocket {
+    animation: rocket-bob 1.2s ease-in-out infinite;
+}
+
+
+/* make placeholder visually smooth (optional) */
+.skill-placeholder {
+    box-sizing: border-box;
+    transition: opacity .28s ease, transform .28s ease;
+}
+
+/* ensure items are GPU accelerated */
+.skill-item {
+    will-change: transform;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+
+.reveal.gsap-reveal-init {
+    opacity: 0;
+    transform: translateY(20px);
+}

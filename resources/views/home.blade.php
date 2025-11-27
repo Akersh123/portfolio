@@ -38,4 +38,36 @@
     {{-- Insert the Livewire component --}}
     <livewire:about-portfolio />
     <livewire:project-portfolio />
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
+        <div class="bg-white/60 backdrop-blur shadow-md border border-gray-200 rounded-xl p-6">
+            <div class="space-y-4">
+                <livewire:work-experience />
+            </div>
+        </div>
+
+        <!-- Projects Managed Card -->
+        <div class="bg-white/60 backdrop-blur shadow-md border border-gray-200 rounded-xl p-6">
+            <div class="space-y-4">
+                <livewire:projects-managed />
+            </div>
+        </div>
+    </div>
+    <button id="scrollToTop" aria-label="Scroll to top" class="scroll-to-top" type="button">
+        <!-- SVG set to 100% so it lines up exactly with the button box -->
+        <svg class="progress-ring" viewBox="0 0 64 64" preserveAspectRatio="xMidYMid meet" aria-hidden="true"
+            focusable="false">
+            <!-- background ring -->
+            <circle class="progress-ring__bg" cx="32" cy="32" r="28" fill="transparent"
+                stroke="rgba(255,255,255,0.06)" stroke-width="6"></circle>
+            <!-- progress ring (starts empty; JS will set dashoffset) -->
+            <circle class="progress-ring__circle" cx="32" cy="32" r="28" fill="transparent" stroke="#00C2FF"
+                stroke-width="6" stroke-linecap="round" transform="rotate(-90 32 32)"></circle>
+        </svg>
+
+        <!-- inner dark circle (visual core). Keep as element so we can control exact sizing -->
+        <span class="scroll-core" aria-hidden="true">
+            <span class="chev" aria-hidden="true"><img id="page-rocket" src="/images/rocket.png" alt="rocket"
+                    aria-hidden="true" /></span>
+        </span>
+    </button>
 @endsection
